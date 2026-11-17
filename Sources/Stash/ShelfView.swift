@@ -72,10 +72,12 @@ private struct ShelfFooter: View {
 
             Spacer(minLength: 4)
 
-            if model.notice?.offersUndo == true {
+            // Undo stays on offer for as long as the shelf is open, also after the message has gone.
+            if model.store.canUndo {
                 Button(L("footer.undo")) { model.undo() }
                     .help(L("footer.undo.help"))
-            } else if !model.store.items.isEmpty {
+            }
+            if !model.store.items.isEmpty {
                 Button(L("footer.clear")) { model.clear() }
                     .help(L("footer.clear.help"))
             }

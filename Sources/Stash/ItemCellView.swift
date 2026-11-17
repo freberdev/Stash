@@ -65,6 +65,7 @@ final class ItemCellView: NSTableCellView {
 
     func show(_ description: ItemDescription, icon image: ItemIcon) {
         title.stringValue = description.title
+        title.lineBreakMode = description.isFileName ? .byTruncatingMiddle : .byTruncatingTail
         subtitle.stringValue = description.subtitle
         subtitle.textColor = description.isMissing ? .systemOrange : .secondaryLabelColor
         toolTip = description.toolTip

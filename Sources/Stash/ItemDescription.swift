@@ -10,10 +10,13 @@ struct ItemDescription {
     let subtitle: String
     let toolTip: String
     let isMissing: Bool
+    /// File names are shortened in the middle, so the extension stays in view. Other titles at the end.
+    let isFileName: Bool
 
     init(_ item: StashItem, isMissing: Bool) {
         self.isMissing = isMissing
         title = item.name
+        isFileName = item.isReference || item.isCopy
 
         switch item.content {
         case .reference(_, let path):
