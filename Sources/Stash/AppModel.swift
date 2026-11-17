@@ -337,7 +337,20 @@ final class AppModel {
         settingsWindow?.show()
     }
 
+    /// Changes when the shelf clears itself. If that would clear something right away, the
+    /// user is asked first: clearing by age cannot be undone, and it deletes copies.
     func setRetention(_ new: Retention) {
+        let count = store.expiredCount(new)
+        if count > 0 {
+            let alert = NSAlert()
+            alert.alertStyle = .warning
+            alert.messageText = L(
+                count: count, one: "settings.retention.confirm.one", many: "settings.retention.confirm.many")
+            alert.informativeText = L("settings.retention.confirm.message")
+            alert.addButton(withTitle: L("settings.retention.confirm.clear"))
+            alert.addButton(withTitle: L("settings.retention.confirm.cancel"))
+            guard alert.runModal() == .alertFirstButtonReturn else { return }
+        }
         retention = new
         preferences.retention = new
         store.removeExpired(new)

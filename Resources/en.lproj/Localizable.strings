@@ -64,6 +64,11 @@
 "settings.retention.oneWeek" = "After one week";
 "settings.retention.oneMonth" = "After 30 days";
 "settings.retention.hint" = "Anything that has been in Stash longer than this is removed by itself. The original files are never affected.";
+"settings.retention.confirm.one" = "1 item will be removed now";
+"settings.retention.confirm.many" = "%ld items will be removed now";
+"settings.retention.confirm.message" = "They have been in Stash longer than the time you chose. Original files are not affected, but copies in Stash are deleted. This can't be undone.";
+"settings.retention.confirm.clear" = "Clear";
+"settings.retention.confirm.cancel" = "Cancel";
 "settings.language.label" = "Language";
 "settings.language.system" = "Same as the system";
 "settings.language.hint" = "Stash restarts when you change language. What is in Stash is not affected.";

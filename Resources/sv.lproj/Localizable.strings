@@ -64,6 +64,11 @@
 "settings.retention.oneWeek" = "Efter en vecka";
 "settings.retention.oneMonth" = "Efter 30 dagar";
 "settings.retention.hint" = "Det som har legat i Stash längre än så tas bort av sig självt. Originalfilerna påverkas aldrig.";
+"settings.retention.confirm.one" = "1 objekt tas bort nu";
+"settings.retention.confirm.many" = "%ld objekt tas bort nu";
+"settings.retention.confirm.message" = "De har legat i Stash längre än den tid du valde. Originalfiler påverkas inte, men kopior i Stash raderas. Det går inte att ångra.";
+"settings.retention.confirm.clear" = "Rensa";
+"settings.retention.confirm.cancel" = "Avbryt";
 "settings.language.label" = "Språk";
 "settings.language.system" = "Samma som systemet";
 "settings.language.hint" = "Stash startar om när du byter språk. Det som ligger i Stash påverkas inte.";

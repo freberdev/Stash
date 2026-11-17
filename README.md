@@ -38,7 +38,7 @@ A right-click on a row offers Open, Show in Finder, Copy and Remove from Stash. 
 
 Removing and clearing happen at once, without a question. **Undo** stays in the bottom line for as long as the shelf is open; once you hide the shelf, what was removed is gone from Stash.
 
-Settings let you change the shortcut, open Stash at login, choose when the shelf clears itself, and choose the language.
+Settings let you change the shortcut, open Stash at login, choose when the shelf clears itself, and choose the language. If a new clearing time would remove something right away, Stash asks first.
 
 ## Your files are safe
 
@@ -52,7 +52,7 @@ The rule Stash is built around: adding something to the shelf never moves or cha
 
 ### References and copies
 
-Some things you drag have no file of their own: an image on a web page, an attachment in an email. Stash keeps those as copies in its own folder, and marks them "copy in Stash". A copy is deleted when you remove it and then hide the shelf.
+Some things you drag have no lasting file of their own: an image on a web page, an attachment in an email, a file in a temporary folder. Stash keeps those as copies in its own folder, and marks them "copy in Stash". A copy is deleted when you remove it and then hide the shelf.
 
 Links and text are stored in the list itself.
 
@@ -71,12 +71,13 @@ Every app describes what it lets you drag in its own way, so some things are wor
 **Dragging in**
 
 - Files and folders from Finder, and from any app that drags real files, become references.
+- A file in a temporary folder or a cache becomes a copy instead, because such a file is cleaned away sooner or later. A screenshot dragged from its floating thumbnail is one example.
 - A link from a browser's address bar or page becomes a link, with the page title when the browser provides it.
 - Selected text becomes text. Text that is nothing but a web address becomes a link.
 - An image dragged from a web page becomes a copy of the image. If the image is itself a link, you get the image, not the link.
 - Attachments and other files that an app only promises to deliver, from Mail or Photos for example, become copies once the app has written them.
 - If an app offers nothing Stash can keep, the pointer shows no green plus and the drop bounces back.
-- Stash never accepts a drag as a move. If an app only allows moving, the drop is refused.
+- Stash never accepts a drag as a move. If an app only allows moving, the drop is refused. Some web pages drag their own items that way.
 - The same file, link or text dropped twice is not added twice. It moves to the top.
 
 **Dragging out**

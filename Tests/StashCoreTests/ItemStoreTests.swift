@@ -6,8 +6,10 @@ import Testing
     let temp = TempDirectory()
     let clock = TestClock()
 
-    func makeStore() -> ItemStore {
-        let store = ItemStore(directory: temp.shelf, now: { [clock] in clock.now })
+    /// The test files live in the system's temporary folder. Unless a test says otherwise,
+    /// nothing is treated as temporary, so they behave like files in the user's own folders.
+    func makeStore(temporary: @escaping (String) -> Bool = { _ in false }) -> ItemStore {
+        let store = ItemStore(directory: temp.shelf, now: { [clock] in clock.now }, isTemporary: temporary)
         store.load()
         return store
     }
@@ -136,6 +138,30 @@ import Testing
         #expect(copies.count == 1)
     }
 
+    @Test func copiesSurviveEveryLaunchAfterAListThatCouldNotBeRead() throws {
+        let first = makeStore()
+        first.addImage(Data([1, 2, 3]), fileName: "Image.png")
+        try Data("not json".utf8).write(to: temp.shelf.appendingPathComponent("items.json"))
+
+        _ = makeStore()
+        let third = makeStore()
+        #expect(third.items.isEmpty)
+        // As long as the list that was put aside is there, its copies are too.
+        #expect(try FileManager.default.contentsOfDirectory(atPath: third.copiesDirectory.path).count == 1)
+    }
+
+    @Test func aListThatExistsButCannotBeOpenedIsNotTakenForAnEmptyShelf() throws {
+        let first = makeStore()
+        first.addImage(Data([1, 2, 3]), fileName: "Image.png")
+        let list = temp.shelf.appendingPathComponent("items.json")
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: list.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: list.path) }
+
+        let second = makeStore()
+        #expect(second.items.isEmpty)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: second.copiesDirectory.path).count == 1)
+    }
+
     @Test func aListFromANewerVersionIsPutAside() throws {
         try FileManager.default.createDirectory(at: temp.shelf, withIntermediateDirectories: true)
         let list = temp.shelf.appendingPathComponent("items.json")
@@ -236,6 +262,39 @@ import Testing
         #expect(store.items.count == 1)
         #expect(store.missing.isEmpty)
         #expect(store.fileURL(for: store.items[0])?.path == file.path)
+    }
+
+    // MARK: Files that will not last
+
+    @Test func aFileInATemporaryFolderIsKeptAsACopy() throws {
+        // A screenshot dragged from its floating thumbnail, for example, is deleted by the system later.
+        let file = temp.makeFile("TemporaryItems/Screenshot.png", content: "pixels")
+        let before = FileFingerprint(file)
+        let store = makeStore(temporary: { $0.contains("/TemporaryItems/") })
+
+        #expect(store.addFiles([file]) == AddOutcome(added: 1))
+        let item = store.items[0]
+        #expect(item.isCopy)
+        #expect(item.kind == .image)
+        #expect(item.name == "Screenshot.png")
+
+        // The source may delete its file. Stash still has the content.
+        #expect(FileFingerprint(file) == before)
+        try FileManager.default.removeItem(at: file)
+        store.refresh()
+        #expect(store.missing.isEmpty)
+        #expect(try String(contentsOf: #require(store.fileURL(for: item)), encoding: .utf8) == "pixels")
+    }
+
+    @Test func otherFilesInTheSameDropAreStillReferences() {
+        let lasting = temp.makeFile("lasting.txt")
+        let passing = temp.makeFile("TemporaryItems/passing.txt")
+        let store = makeStore(temporary: { $0.contains("/TemporaryItems/") })
+
+        #expect(store.addFiles([lasting, passing]) == AddOutcome(added: 2))
+        #expect(store.items.map(\.name) == ["lasting.txt", "passing.txt"])
+        #expect(store.items[0].isReference)
+        #expect(store.items[1].isCopy)
     }
 
     // MARK: Links and text
@@ -384,6 +443,35 @@ import Testing
         store.undo()
         #expect(store.items.map(\.name) == ["t", "f.txt"])
         #expect(store.fileURL(for: store.items[1])?.path == file.path)
+    }
+
+    @Test func undoDoesNotBringBackWhatHasBeenAddedAgainSince() {
+        let file = temp.makeFile("again.txt")
+        let link = URL(string: "https://example.com")!
+        let store = makeStore()
+        store.addFiles([file])
+        store.addLink(link)
+        store.addText("words")
+        store.addText("other")
+        store.remove(Set(store.items.filter { $0.name != "other" }.map(\.id)))
+
+        store.addFiles([file])
+        store.addLink(link)
+        store.addText("words")
+        #expect(store.undo() == 0)
+        #expect(store.items.count == 4)
+        #expect(Set(store.items.map(\.name)).count == 4)
+    }
+
+    @Test func itemsThatWouldBeClearedCanBeCountedFirst() {
+        let store = makeStore()
+        store.addText("old")
+        clock.advance(days: 2)
+        store.addText("new")
+        #expect(store.expiredCount(.oneDay) == 1)
+        #expect(store.expiredCount(.oneWeek) == 0)
+        #expect(store.expiredCount(.never) == 0)
+        #expect(store.items.count == 2)
     }
 
     @Test func removingNothingLeavesNothingToUndo() {

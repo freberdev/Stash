@@ -33,23 +33,29 @@ public struct BookmarkAccess: FileAccess {
 
     public func bookmark(for url: URL) throws -> Data {
         do {
-            return try url.bookmarkData(
-                options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
-                includingResourceValuesForKeys: nil, relativeTo: nil)
+            return try scopedBookmark(for: url)
         } catch {
             // Outside the sandbox some volumes refuse a scoped bookmark. A plain one still follows the file.
             return try url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
         }
     }
 
+    private func scopedBookmark(for url: URL) throws -> Data {
+        try url.bookmarkData(
+            options: [.withSecurityScope, .securityScopeAllowOnlyReadAccess],
+            includingResourceValuesForKeys: nil, relativeTo: nil)
+    }
+
     public func resolve(_ bookmark: Data) -> ResolvedFile? {
         // Never mount a network disk or show a dialog just to find out whether a file is there.
         let quiet: URL.BookmarkResolutionOptions = [.withoutUI, .withoutMounting]
         var isStale = false
+        var isScoped = true
         var url = try? URL(
             resolvingBookmarkData: bookmark, options: quiet.union(.withSecurityScope),
             relativeTo: nil, bookmarkDataIsStale: &isStale)
         if url == nil {
+            isScoped = false
             url = try? URL(
                 resolvingBookmarkData: bookmark, options: quiet,
                 relativeTo: nil, bookmarkDataIsStale: &isStale)
@@ -57,7 +63,14 @@ public struct BookmarkAccess: FileAccess {
         guard let url else { return nil }
 
         let holdsAccess = url.startAccessingSecurityScopedResource()
-        let fresh = isStale ? try? self.bookmark(for: url) : nil
+        // An out-of-date bookmark is replaced by one of the same kind or not at all: a plain
+        // bookmark in place of a scoped one would lose access to the file at the next launch.
+        var fresh: Data?
+        if isStale {
+            fresh = isScoped
+                ? try? scopedBookmark(for: url)
+                : try? url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
+        }
         return ResolvedFile(url: url, freshBookmark: fresh, holdsAccess: holdsAccess)
     }
 

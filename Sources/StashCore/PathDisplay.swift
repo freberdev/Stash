@@ -31,6 +31,15 @@ public enum PathDisplay {
         return components.contains(".Trash") || components.contains(".Trashes")
     }
 
+    /// True for a file in a place the system or another app cleans up by itself: a temporary
+    /// folder or a cache. A reference to such a file would soon point at nothing.
+    public static func isTemporary(_ path: String) -> Bool {
+        let roots = ["/private/var/folders/", "/var/folders/", "/private/tmp/", "/tmp/"]
+        if roots.contains(where: path.hasPrefix) { return true }
+        let folders = (path as NSString).deletingLastPathComponent + "/"
+        return ["/TemporaryItems/", "/Library/Caches/", "/tmp/"].contains(where: folders.contains)
+    }
+
     /// A one-line name for a piece of text: its first line with something on it, cut to a sensible length.
     public static func title(forText text: String, limit: Int = 80) -> String {
         let line = text.split(whereSeparator: \.isNewline)

@@ -33,6 +33,18 @@ import Testing
         #expect(!PathDisplay.isInTrash("/Users/anna/.Trashy/a.pdf"))
     }
 
+    @Test func temporaryPlaces() {
+        #expect(PathDisplay.isTemporary("/private/var/folders/ab/xyz/T/TemporaryItems/NSIRD_screencaptureui_1/Screenshot.png"))
+        #expect(PathDisplay.isTemporary("/var/folders/ab/xyz/T/file.txt"))
+        #expect(PathDisplay.isTemporary("/private/tmp/file.txt"))
+        #expect(PathDisplay.isTemporary("/tmp/file.txt"))
+        #expect(PathDisplay.isTemporary("/Users/anna/Library/Caches/com.example/file.txt"))
+        #expect(PathDisplay.isTemporary("/Users/anna/Library/Containers/com.example/Data/tmp/file.txt"))
+        #expect(!PathDisplay.isTemporary("/Users/anna/Documents/file.txt"))
+        #expect(!PathDisplay.isTemporary("/Users/anna/tmpfiles/file.txt"))
+        #expect(!PathDisplay.isTemporary("/Volumes/Disk/Caches.txt"))
+    }
+
     @Test func aTitleForText() {
         #expect(PathDisplay.title(forText: "one\ntwo") == "one")
         #expect(PathDisplay.title(forText: "\n\n   \n  padded  \nnext") == "padded")

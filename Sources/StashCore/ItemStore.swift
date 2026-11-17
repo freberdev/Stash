@@ -42,6 +42,7 @@ public final class ItemStore {
 
     @ObservationIgnored private let access: any FileAccess
     @ObservationIgnored private let now: () -> Date
+    @ObservationIgnored private let isTemporary: (String) -> Bool
     @ObservationIgnored private var open: [UUID: ResolvedFile] = [:]
     @ObservationIgnored private var removed: [[Removal]] = []
     @ObservationIgnored private var couldNotReadList = false
@@ -57,10 +58,14 @@ public final class ItemStore {
         var items: [StashItem]
     }
 
-    public init(directory: URL, access: any FileAccess = BookmarkAccess(), now: @escaping () -> Date = Date.init) {
+    public init(
+        directory: URL, access: any FileAccess = BookmarkAccess(), now: @escaping () -> Date = Date.init,
+        isTemporary: @escaping (String) -> Bool = PathDisplay.isTemporary
+    ) {
         self.directory = directory
         self.access = access
         self.now = now
+        self.isTemporary = isTemporary
     }
 
     /// The folder in Application Support where the shelf is kept.
@@ -72,6 +77,7 @@ public final class ItemStore {
     public var canUndo: Bool { undoDepth > 0 }
 
     private var listFile: URL { directory.appendingPathComponent("items.json") }
+    private var unreadableListFile: URL { directory.appendingPathComponent("items.unreadable.json") }
 
     /// Where Stash keeps the files it holds itself.
     public var copiesDirectory: URL { directory.appendingPathComponent("Copies", isDirectory: true) }
@@ -85,17 +91,18 @@ public final class ItemStore {
     }
 
     private func readList() -> [StashItem] {
-        guard let data = try? Data(contentsOf: listFile) else { return [] }
+        // No list at all is a new shelf. A list that is there but cannot be used is something else.
+        guard FileManager.default.fileExists(atPath: listFile.path) else { return [] }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        if let shelf = try? decoder.decode(Shelf.self, from: data), shelf.version <= Shelf.currentVersion {
+        if let data = try? Data(contentsOf: listFile),
+           let shelf = try? decoder.decode(Shelf.self, from: data), shelf.version <= Shelf.currentVersion {
             return shelf.items
         }
         // A list that cannot be read is put aside rather than overwritten.
         couldNotReadList = true
-        let aside = directory.appendingPathComponent("items.unreadable.json")
-        try? FileManager.default.removeItem(at: aside)
-        try? FileManager.default.moveItem(at: listFile, to: aside)
+        try? FileManager.default.removeItem(at: unreadableListFile)
+        try? FileManager.default.moveItem(at: listFile, to: unreadableListFile)
         return []
     }
 
@@ -138,6 +145,15 @@ public final class ItemStore {
                 }
                 top.append(item)
                 outcome.alreadyThere += 1
+            } else if isTemporary(url.path) {
+                // The file is somewhere that gets cleaned up. A reference would not last, so its
+                // content is copied instead. The file itself is only read.
+                if let item = copyOfFile(at: url) {
+                    top.append(item)
+                    outcome.added += 1
+                } else {
+                    outcome.failed += 1
+                }
             } else if let bookmark = try? access.bookmark(for: url) {
                 let item = StashItem(
                     kind: Self.isFolder(url) ? .folder : .file, name: url.lastPathComponent,
@@ -197,9 +213,14 @@ public final class ItemStore {
     /// Puts a file that already lies in a folder from `makeCopyDirectory` on the shelf.
     @discardableResult
     public func addCopy(at file: URL) -> AddOutcome {
+        guard let item = copyItem(for: file) else { return AddOutcome(failed: 1) }
+        return insert(item)
+    }
+
+    private func copyItem(for file: URL) -> StashItem? {
         let folder = file.deletingLastPathComponent().lastPathComponent
         guard UUID(uuidString: folder) != nil, FileManager.default.fileExists(atPath: file.path) else {
-            return AddOutcome(failed: 1)
+            return nil
         }
         let kind: StashItem.Kind
         if Self.isFolder(file) {
@@ -209,9 +230,22 @@ public final class ItemStore {
         } else {
             kind = .file
         }
-        return insert(StashItem(
+        return StashItem(
             kind: kind, name: file.lastPathComponent,
-            content: .copy(path: folder + "/" + file.lastPathComponent), added: now()))
+            content: .copy(path: folder + "/" + file.lastPathComponent), added: now())
+    }
+
+    /// Copies a file into the Copies folder and makes an item for the copy.
+    private func copyOfFile(at url: URL) -> StashItem? {
+        guard let folder = try? makeCopyDirectory() else { return nil }
+        let destination = folder.appendingPathComponent(url.lastPathComponent)
+        do {
+            try FileManager.default.copyItem(at: url, to: destination)
+        } catch {
+            try? FileManager.default.removeItem(at: folder)
+            return nil
+        }
+        return copyItem(for: destination)
     }
 
     private func insert(_ item: StashItem) -> AddOutcome {
@@ -264,16 +298,31 @@ public final class ItemStore {
     }
 
     /// Puts back what was removed last, where it was. Returns how many items came back.
+    /// Something that has been added again in the meantime is not brought back a second time.
     @discardableResult
     public func undo() -> Int {
         guard let batch = removed.popLast() else { return 0 }
-        for removal in batch {
+        var restored = 0
+        for removal in batch where !items.contains(where: { isSameThing($0, removal.item) }) {
             items.insert(removal.item, at: min(removal.index, items.count))
+            restored += 1
         }
         undoDepth = removed.count
         refresh()
         save()
-        return batch.count
+        return restored
+    }
+
+    /// True when two items stand for the same file, link or text. Copies are always their own.
+    private func isSameThing(_ one: StashItem, _ other: StashItem) -> Bool {
+        switch (one.content, other.content) {
+        case (.reference(_, let path), .reference(_, let otherPath)):
+            return (open[one.id]?.url.path ?? path) == (open[other.id]?.url.path ?? otherPath)
+        case (.link, .link), (.text, .text):
+            return one.content == other.content
+        default:
+            return false
+        }
     }
 
     /// Gives up the chance to undo, and deletes the copies that were only kept for that.
@@ -283,12 +332,21 @@ public final class ItemStore {
         undoDepth = 0
     }
 
+    /// How many items have been on the shelf longer than the chosen time.
+    public func expiredCount(_ retention: Retention) -> Int {
+        expired(retention).count
+    }
+
+    private func expired(_ retention: Retention) -> [StashItem] {
+        guard let interval = retention.interval else { return [] }
+        let cutoff = now().addingTimeInterval(-interval)
+        return items.filter { $0.added <= cutoff }
+    }
+
     /// Removes items that have been on the shelf longer than the chosen time. This is not undoable.
     @discardableResult
     public func removeExpired(_ retention: Retention) -> Int {
-        guard let interval = retention.interval else { return 0 }
-        let cutoff = now().addingTimeInterval(-interval)
-        let expired = items.filter { $0.added <= cutoff }
+        let expired = expired(retention)
         guard !expired.isEmpty else { return 0 }
 
         let ids = Set(expired.map(\.id))
@@ -319,9 +377,10 @@ public final class ItemStore {
 
     /// Deletes files in the Copies folder that no item refers to, left behind by a crash for example.
     private func removeOrphanedCopies() {
-        // If the list could not be read, every copy would look orphaned. Leave them be.
-        guard !couldNotReadList else { return }
+        // If the list could not be read, every copy would look orphaned. Leave them be, now and
+        // on later launches, for as long as the list that was put aside is still there.
         let fm = FileManager.default
+        guard !couldNotReadList, !fm.fileExists(atPath: unreadableListFile.path) else { return }
         var known: Set<String> = []
         for item in items {
             if case .copy(let path) = item.content { known.insert(path) }

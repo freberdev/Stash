@@ -155,15 +155,15 @@ final class DropView: NSView {
         passesClicksThrough ? nil : super.hitTest(point)
     }
 
-    /// Stash only ever takes a copy or a reference. It never answers "move", which would
-    /// tell the source app that the original is now Stash's to keep.
+    /// Stash only ever takes a copy or a reference. It never answers "move", which would tell
+    /// the source app that the original is now Stash's to keep, and never "generic" either,
+    /// which web pages among others read as a move.
     private func operation(for sender: any NSDraggingInfo) -> NSDragOperation {
         // Something dragged from the shelf itself is already here.
         guard sender.draggingSource == nil else { return [] }
         let offered = sender.draggingSourceOperationMask
         if offered.contains(.copy) { return .copy }
         if offered.contains(.link) { return .link }
-        if offered.contains(.generic) { return .generic }
         return []
     }
 
