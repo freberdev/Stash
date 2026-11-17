@@ -64,6 +64,9 @@
 "settings.retention.oneWeek" = "After one week";
 "settings.retention.oneMonth" = "After 30 days";
 "settings.retention.hint" = "Anything that has been in Stash longer than this is removed by itself. The original files are never affected.";
+"settings.language.label" = "Language";
+"settings.language.system" = "Same as the system";
+"settings.language.hint" = "Stash restarts when you change language. What is in Stash is not affected.";
 "settings.files.title" = "Your files";
 "settings.files.references" = "Files and folders you drag here are added as references. The originals stay where they are, and Stash can't change, move or delete them.";
 "settings.files.copies" = "Images and attachments that have no file of their own, from an email or a web page for example, are kept as copies. They are marked “copy in Stash” and are deleted when you remove them.";

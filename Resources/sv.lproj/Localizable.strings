@@ -64,6 +64,9 @@
 "settings.retention.oneWeek" = "Efter en vecka";
 "settings.retention.oneMonth" = "Efter 30 dagar";
 "settings.retention.hint" = "Det som har legat i Stash längre än så tas bort av sig självt. Originalfilerna påverkas aldrig.";
+"settings.language.label" = "Språk";
+"settings.language.system" = "Samma som systemet";
+"settings.language.hint" = "Stash startar om när du byter språk. Det som ligger i Stash påverkas inte.";
 "settings.files.title" = "Dina filer";
 "settings.files.references" = "Filer och mappar som du drar hit läggs in som referenser. Originalen ligger kvar där de är, och Stash kan varken ändra, flytta eller radera dem.";
 "settings.files.copies" = "Bilder och bilagor som saknar egen fil, till exempel från ett mejl eller en webbsida, sparas som kopior. De är märkta ”kopia i Stash” och raderas när du tar bort dem.";

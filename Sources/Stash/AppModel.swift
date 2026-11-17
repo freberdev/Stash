@@ -27,6 +27,8 @@ final class AppModel {
     /// True while the settings window is waiting for the user to press a new shortcut.
     private(set) var isRecordingShortcut = false
     private(set) var retention: Retention
+    /// The language chosen for the app. It is read by macOS when the app starts.
+    private(set) var language: AppLanguage
 
     /// The rows selected in the list.
     @ObservationIgnored var selection: Set<UUID> = []
@@ -47,6 +49,7 @@ final class AppModel {
         store = ItemStore(directory: ItemStore.defaultDirectory(named: folder))
         shortcut = preferences.shortcut
         retention = preferences.retention
+        language = AppLanguage.chosen(domain: Bundle.main.bundleIdentifier ?? "")
     }
 
     /// Called once the app has launched: builds the panel and claims the shortcut.
@@ -76,6 +79,11 @@ final class AppModel {
         }
 
         enableLoginItemOnce()
+        if preferences.reopensSettings {
+            // The app has just restarted itself to change language. Go back to where the user was.
+            preferences.reopensSettings = false
+            openSettings()
+        }
         // "-showPanel YES" on the command line opens the shelf at launch, for development.
         if !preferences.hasShownWelcome || UserDefaults.standard.bool(forKey: "showPanel") {
             preferences.hasShownWelcome = true
@@ -333,6 +341,40 @@ final class AppModel {
         retention = new
         preferences.retention = new
         store.removeExpired(new)
+    }
+
+    /// Changes the language of the app. macOS decides the language of an app when it starts,
+    /// and that covers the system's own words as well, such as the names of file kinds.
+    /// So Stash starts again, which takes a moment and loses nothing.
+    func setLanguage(_ new: AppLanguage) {
+        guard new != language else { return }
+        language = new
+        new.store()
+        preferences.reopensSettings = true
+        restart()
+    }
+
+    private func restart() {
+        stopRecordingShortcut()
+        // The new instance must be able to claim the shortcut, so this one lets go of it first.
+        hotKey.unregister()
+        store.forgetRemoved()
+
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) {
+            [weak self] _, error in
+            let started = error == nil
+            Task { @MainActor in
+                if started {
+                    NSApp.terminate(nil)
+                } else {
+                    // Could not start again. Carry on; the language changes the next time Stash is opened.
+                    self?.preferences.reopensSettings = false
+                    self?.resumeHotKey()
+                }
+            }
+        }
     }
 
     /// The shortcut as the user sees it, for example "⌃⌥S".

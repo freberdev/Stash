@@ -7,6 +7,7 @@ public struct Preferences {
         static let retentionDays = "retentionDays"
         static let didAutoEnableLoginItem = "didAutoEnableLoginItem"
         static let hasShownWelcome = "hasShownWelcome"
+        static let reopensSettings = "reopensSettings"
     }
 
     private let defaults: UserDefaults
@@ -45,5 +46,11 @@ public struct Preferences {
     public var hasShownWelcome: Bool {
         get { defaults.bool(forKey: Key.hasShownWelcome) }
         nonmutating set { defaults.set(newValue, forKey: Key.hasShownWelcome) }
+    }
+
+    /// Set just before the app restarts itself from the settings window, so that it opens there again.
+    public var reopensSettings: Bool {
+        get { defaults.bool(forKey: Key.reopensSettings) }
+        nonmutating set { defaults.set(newValue, forKey: Key.reopensSettings) }
     }
 }

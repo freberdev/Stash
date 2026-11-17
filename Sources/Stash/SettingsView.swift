@@ -50,6 +50,19 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            Section {
+                Picker(L("settings.language.label"), selection: language) {
+                    Text(L("settings.language.system")).tag(AppLanguage.system)
+                    // Each language is named in its own words, so it can be found from the other one.
+                    Text(verbatim: "Svenska").tag(AppLanguage.swedish)
+                    Text(verbatim: "English").tag(AppLanguage.english)
+                }
+                Text(L("settings.language.hint"))
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             Section(L("settings.files.title")) {
                 Text(L("settings.files.references"))
                 Text(L("settings.files.copies"))
@@ -62,6 +75,10 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var language: Binding<AppLanguage> {
+        Binding { model.language } set: { model.setLanguage($0) }
     }
 
     private var retention: Binding<Retention> {
