@@ -1,0 +1,70 @@
+/* Empty shelf */
+"empty.title" = "Drag files, links or text here";
+"empty.hint" = "%@ opens Stash from anywhere.";
+
+/* Bottom line */
+"footer.count.one" = "1 item";
+"footer.count.many" = "%ld items";
+"footer.clear" = "Clear";
+"footer.clear.help" = "Remove everything from Stash. The original files are not affected.";
+"footer.undo" = "Undo";
+"footer.undo.help" = "Put back what was removed (⌘Z)";
+"footer.more" = "More";
+"footer.saveFailed" = "Couldn't save the list";
+"notice.removed.one" = "1 item removed";
+"notice.removed.many" = "%ld items removed";
+"notice.cleared" = "Stash cleared";
+"notice.copied" = "Copied";
+
+/* Drops */
+"drop.unsupported" = "That can't be put in Stash";
+"drop.failed" = "Couldn't be added";
+"drop.partlyFailed" = "%ld added, %ld couldn't be added";
+"drop.alreadyThere" = "Already in Stash";
+
+/* Rows */
+"list.label" = "Stash contents";
+"item.missing" = "Original not found";
+"item.copy" = "copy in Stash";
+"item.kind.folder" = "Folder";
+"item.kind.file" = "File";
+"item.text.one" = "Text · 1 character";
+"item.text.many" = "Text · %ld characters";
+"item.image.name" = "Image";
+"item.tip.reference" = "%@\nA reference to the original. Stash never moves or changes the file.";
+"item.tip.missing" = "%@\nThe file has been deleted, moved to another disk, or is on a disk that isn't connected. Remove the row if you don't need it.";
+"item.tip.copy" = "A copy that Stash keeps itself, because what you dragged here had no file of its own. It is deleted when you remove the row.";
+"row.open" = "Open";
+"row.reveal" = "Show in Finder";
+"row.copy" = "Copy";
+"row.remove" = "Remove from Stash";
+"row.remove.label" = "Remove %@ from Stash";
+
+/* Menu bar */
+"status.help" = "Stash (%@). Click to show, or drag things here.";
+"menu.show" = "Show Stash  %@";
+"menu.hide" = "Hide Stash  %@";
+"menu.clear" = "Clear Stash";
+"menu.settings" = "Settings…";
+"menu.quit" = "Quit Stash";
+
+/* Settings */
+"settings.title" = "Stash Settings";
+"settings.shortcut.label" = "Show Stash";
+"settings.shortcut.change" = "Change shortcut";
+"settings.shortcut.recording" = "Press a shortcut…";
+"settings.shortcut.hint" = "Click the shortcut, then press the new one. If it doesn't seem to do anything, another app may be using it. Pick a different one.";
+"settings.shortcut.needsModifier" = "A shortcut needs ⌘ or ⌃. Option alone would get in the way of typing characters such as @ and |.";
+"settings.shortcut.refused" = "macOS didn't accept that shortcut. The previous one is still in use.";
+"settings.login.label" = "Open Stash at login";
+"settings.login.failed" = "Couldn't change the login item. You can set it under System Settings > General > Login Items.";
+"settings.retention.label" = "Clear automatically";
+"settings.retention.never" = "Never";
+"settings.retention.oneDay" = "After one day";
+"settings.retention.oneWeek" = "After one week";
+"settings.retention.oneMonth" = "After 30 days";
+"settings.retention.hint" = "Anything that has been in Stash longer than this is removed by itself. The original files are never affected.";
+"settings.files.title" = "Your files";
+"settings.files.references" = "Files and folders you drag here are added as references. The originals stay where they are, and Stash can't change, move or delete them.";
+"settings.files.copies" = "Images and attachments that have no file of their own, from an email or a web page for example, are kept as copies. They are marked “copy in Stash” and are deleted when you remove them.";
+"settings.files.privacy" = "Everything stays on this Mac. Stash has no permission to use the network and never sends anything anywhere.";

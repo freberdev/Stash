@@ -1,0 +1,70 @@
+/* Empty shelf */
+"empty.title" = "Dra hit filer, länkar eller text";
+"empty.hint" = "%@ öppnar Stash varifrån som helst.";
+
+/* Bottom line */
+"footer.count.one" = "1 objekt";
+"footer.count.many" = "%ld objekt";
+"footer.clear" = "Töm";
+"footer.clear.help" = "Ta bort allt från Stash. Originalfilerna påverkas inte.";
+"footer.undo" = "Ångra";
+"footer.undo.help" = "Lägg tillbaka det som togs bort (⌘Z)";
+"footer.more" = "Mer";
+"footer.saveFailed" = "Kunde inte spara listan";
+"notice.removed.one" = "1 objekt borttaget";
+"notice.removed.many" = "%ld objekt borttagna";
+"notice.cleared" = "Stash tömd";
+"notice.copied" = "Kopierat";
+
+/* Drops */
+"drop.unsupported" = "Det där går inte att lägga i Stash";
+"drop.failed" = "Kunde inte läggas till";
+"drop.partlyFailed" = "%ld tillagda, %ld gick inte att lägga till";
+"drop.alreadyThere" = "Finns redan i Stash";
+
+/* Rows */
+"list.label" = "Innehåll i Stash";
+"item.missing" = "Originalet hittas inte";
+"item.copy" = "kopia i Stash";
+"item.kind.folder" = "Mapp";
+"item.kind.file" = "Fil";
+"item.text.one" = "Text · 1 tecken";
+"item.text.many" = "Text · %ld tecken";
+"item.image.name" = "Bild";
+"item.tip.reference" = "%@\nEn referens till originalet. Stash flyttar eller ändrar aldrig filen.";
+"item.tip.missing" = "%@\nFilen har raderats, flyttats till en annan disk eller ligger på en disk som inte är ansluten. Ta bort raden om du inte behöver den.";
+"item.tip.copy" = "En kopia som Stash sparar själv, eftersom det du drog hit inte hade någon egen fil. Den raderas när du tar bort raden.";
+"row.open" = "Öppna";
+"row.reveal" = "Visa i Finder";
+"row.copy" = "Kopiera";
+"row.remove" = "Ta bort från Stash";
+"row.remove.label" = "Ta bort %@ från Stash";
+
+/* Menu bar */
+"status.help" = "Stash (%@). Klicka för att visa, eller dra saker hit.";
+"menu.show" = "Visa Stash  %@";
+"menu.hide" = "Dölj Stash  %@";
+"menu.clear" = "Töm Stash";
+"menu.settings" = "Inställningar…";
+"menu.quit" = "Avsluta Stash";
+
+/* Settings */
+"settings.title" = "Inställningar för Stash";
+"settings.shortcut.label" = "Visa Stash";
+"settings.shortcut.change" = "Byt kortkommando";
+"settings.shortcut.recording" = "Tryck ett kortkommando…";
+"settings.shortcut.hint" = "Klicka på kortkommandot och tryck sedan det nya. Verkar det inte göra något kan en annan app använda det. Välj då ett annat.";
+"settings.shortcut.needsModifier" = "Ett kortkommando behöver ⌘ eller ⌃. Enbart Option skulle störa tecken som @ och |.";
+"settings.shortcut.refused" = "macOS godtog inte det kortkommandot. Det förra gäller fortfarande.";
+"settings.login.label" = "Öppna Stash vid inloggning";
+"settings.login.failed" = "Kunde inte ändra inloggningsobjektet. Du kan ställa in det under Systeminställningar > Allmänt > Inloggningsobjekt.";
+"settings.retention.label" = "Rensa automatiskt";
+"settings.retention.never" = "Aldrig";
+"settings.retention.oneDay" = "Efter ett dygn";
+"settings.retention.oneWeek" = "Efter en vecka";
+"settings.retention.oneMonth" = "Efter 30 dagar";
+"settings.retention.hint" = "Det som har legat i Stash längre än så tas bort av sig självt. Originalfilerna påverkas aldrig.";
+"settings.files.title" = "Dina filer";
+"settings.files.references" = "Filer och mappar som du drar hit läggs in som referenser. Originalen ligger kvar där de är, och Stash kan varken ändra, flytta eller radera dem.";
+"settings.files.copies" = "Bilder och bilagor som saknar egen fil, till exempel från ett mejl eller en webbsida, sparas som kopior. De är märkta ”kopia i Stash” och raderas när du tar bort dem.";
+"settings.files.privacy" = "Allt stannar på den här datorn. Stash har ingen rätt att använda nätverket och skickar aldrig något någonstans.";
